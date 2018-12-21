@@ -46,6 +46,17 @@ def parseFeed(feed_url):
 			except:
 				logging.error("Error adding item \'{0}\': ".format(item.enclosures[0]['href']) + str(sys.exc_info()[0]).strip())
 
+# reannounce the torrents added within the minutes given
+def reannounceTorrentsWithin(minutes):
+	torrents = tc.get_torrents()
+	for torrent in torrents:
+		if time.time() - torrent.addedDate < minutes * 60:
+			try:
+				tc.reannounce_torrent(torrent.id)
+				logging.info("Reannounced torrent: \'{0}\'".format(torrent.name))
+			except:
+				logging.error("Reannouncing torrent failed: \'{0}\'".format(torrent.name))
+
 # argparse configuration and argument definitions
 parser = argparse.ArgumentParser(description='Reads RSS/Atom Feeds and add torrents to Transmission')
 parser.add_argument('feed_urls', metavar='<url>', type=str, nargs='+',
@@ -80,6 +91,11 @@ parser.add_argument('--download-dir',
 					default=None,
 					metavar='<dir>',
 					help='The directory where the downloaded contents will be saved in. Optional.')
+parser.add_argument('--force-reannounce',
+					default=0,
+					metavar='<minutes>',
+					help='Force reannounce torrents added within given minutes. 0 means disable')
+
 
 # parse the arguments
 args = parser.parse_args()
@@ -105,8 +121,16 @@ if __name__ == "__main__":
 		logging.error("Error connecting to Transmission: " + str(sys.exc_info()[0]).strip())
 		exit(0)
 
+	try:
+		reannounceInterval = int(args.force_reannounce)
+	except:
+		reannounceInterval = 0
+		logging.error("Parameter \'--force-reannounce\' only take integer values, current value is \'{0}\'\n\tFalling back to default value 0 (disable).".format(args.force_reannounce))
+
 	# read the feed urls from config
 	while True:
 		for feed_url in args.feed_urls:
 			parseFeed(feed_url)
+		if reannounceInterval:
+			reannounceTorrentsWithin(reannounceInterval)
 		time.sleep(120)
