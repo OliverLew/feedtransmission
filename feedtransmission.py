@@ -36,6 +36,8 @@ def parseFeed(feed_url):
 	if feed.bozo and feed.bozo_exception:
 		logging.error("Error reading feed \'{0}\': ".format(feed_url) + str(feed.bozo_exception).strip())
 		return
+	else:
+		logging.info("Reading feed \'{0}\'".format(feed_url))
 
 	addeditems = readAddedItems()
 
