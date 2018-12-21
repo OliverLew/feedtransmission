@@ -21,11 +21,11 @@ def readAddedItems():
 # add the link to transmission and appends the link to the added items
 def addItem(item):
 	if args.download_dir:
-		logging.info("Adding Torrent: " + item.title + " (" + item.link + ") to " + args.download_dir)
-		tc.add_torrent(item.link, download_dir = args.download_dir, paused = args.add_paused)
+		logging.info("Adding Torrent: " + item.title + " (" + item.enclosures[0]['href'] + ") to " + args.download_dir)
+		tc.add_torrent(item.enclosures[0]['href'], download_dir = args.download_dir, paused = args.add_paused)
 	else:
-		logging.info("Adding Torrent: " + item.title + " (" + item.link + ") to default directory")
-		tc.add_torrent(item.link, paused = args.add_paused)
+		logging.info("Adding Torrent: " + item.title + " (" + item.enclosures[0]['href'] + ") to default directory")
+		tc.add_torrent(item.enclosures[0]['href'], paused = args.add_paused)
 	with open(added_items_filepath, 'a') as f:
 		f.write(item.link + '\n')
 
@@ -43,7 +43,7 @@ def parseFeed(feed_url):
 			try:
 				addItem(item)
 			except:
-				logging.error("Error adding item \'{0}\': ".format(item.link) + str(sys.exc_info()[0]).strip())
+				logging.error("Error adding item \'{0}\': ".format(item.enclosures[0]['href']) + str(sys.exc_info()[0]).strip())
 
 # argparse configuration and argument definitions
 parser = argparse.ArgumentParser(description='Reads RSS/Atom Feeds and add torrents to Transmission')
