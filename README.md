@@ -1,6 +1,9 @@
 # feedtransmission
 feedtransmission is a python script to read RSS/Atom feeds of torrents and add them to Transmission to download
 
+This fork adapted this script to use for [nexusphp](https://github.com/ZJUT/NexusPHP) based tracker sites.
+Also added options to loop execute reading feeds and periodically reannounce recent torrents.
+
 ## Install
 
 You will need two Python packages:
@@ -27,6 +30,7 @@ feedtransmission.py http://url.to/torrent/feed.xml http://another.url/to/feed
 ```
 
 Most probably you want to add feedtransmission to your cron file to regularly monitor a feed.
+(You don't need to in this fork)
 
 List of parameters available:
 ```
@@ -45,6 +49,11 @@ List of parameters available:
                         that by deleting the addeditems.txt
   --download-dir <dir>  The directory where the downloaded contents will be
                         saved in. Optional.
+  --force-reannounce <minutes>
+                        Force reannounce torrents added within given minutes.
+                        0 means disable (default: 60)
+  --interval <minutes>  Time interval (minutes) between each request for all
+                        the rss feeds. (default: 5)
 ```
 
 
