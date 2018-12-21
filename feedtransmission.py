@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys, os
+import time
 import feedparser
 import transmissionrpc
 import argparse
@@ -105,5 +106,7 @@ if __name__ == "__main__":
 		exit(0)
 
 	# read the feed urls from config
-	for feed_url in args.feed_urls:
-		parseFeed(feed_url)
+	while True:
+		for feed_url in args.feed_urls:
+			parseFeed(feed_url)
+		time.sleep(120)
