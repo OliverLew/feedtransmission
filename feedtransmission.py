@@ -94,10 +94,9 @@ parser.add_argument('--download-dir',
 					metavar='<dir>',
 					help='The directory where the downloaded contents will be saved in. Optional.')
 parser.add_argument('--force-reannounce',
-					default=0,
+					default='60',
 					metavar='<minutes>',
-					help='Force reannounce torrents added within given minutes. 0 means disable')
-
+                                        help='Force reannounce torrents added within given minutes. 0 means disable (default: %(default)s)')
 
 # parse the arguments
 args = parser.parse_args()
@@ -124,10 +123,10 @@ if __name__ == "__main__":
 		exit(0)
 
 	try:
-		reannounceInterval = int(args.force_reannounce)
+		reannounceInterval = float(args.force_reannounce)
 	except:
-		reannounceInterval = 0
-		logging.error("Parameter \'--force-reannounce\' only take integer values, current value is \'{0}\'\n\tFalling back to default value 0 (disable).".format(args.force_reannounce))
+		logging.error("Parameter \'--force-reannounce\' only takes floating/integer values, current value is \'{0}\'".format(args.force_reannounce))
+		exit(0)
 
 	# read the feed urls from config
 	while True:
