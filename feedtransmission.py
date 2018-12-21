@@ -96,7 +96,11 @@ parser.add_argument('--download-dir',
 parser.add_argument('--force-reannounce',
 					default='60',
 					metavar='<minutes>',
-                                        help='Force reannounce torrents added within given minutes. 0 means disable (default: %(default)s)')
+                                        help='Force reannounce torrents added within given minutes. This may help getting a connection to other peers faster. 0 means disable (default: %(default)s)')
+parser.add_argument('--interval',
+					default='2',
+					metavar='<minutes>',
+					help='Time interval (minutes) between each request for all the rss feeds. (default: %(default)s)')
 
 # parse the arguments
 args = parser.parse_args()
@@ -128,10 +132,16 @@ if __name__ == "__main__":
 		logging.error("Parameter \'--force-reannounce\' only takes floating/integer values, current value is \'{0}\'".format(args.force_reannounce))
 		exit(0)
 
+	try:
+		updateInterval = float(args.interval)
+	except:
+		logging.error("Parameter \'--interval\' only takes floating/integer values, current value is \'{0}\'".format(args.interval))
+		exit(0)
+
 	# read the feed urls from config
 	while True:
 		for feed_url in args.feed_urls:
 			parseFeed(feed_url)
 		if reannounceInterval:
 			reannounceTorrentsWithin(reannounceInterval)
-		time.sleep(120)
+		time.sleep(int(updateInterval * 60))
