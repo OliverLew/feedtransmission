@@ -63,41 +63,41 @@ def reannounceTorrentsWithin(minutes):
 parser = argparse.ArgumentParser(description='Reads RSS/Atom Feeds and add torrents to Transmission')
 parser.add_argument('feed_urls', metavar='<url>', type=str, nargs='+',
 				   help='Feed Url(s)')
-parser.add_argument('--transmission-host',
+parser.add_argument('-H', '--transmission-host',
 					metavar='<host>',
 					default='localhost',
 					help='Host for Transmission RPC (default: %(default)s)')
-parser.add_argument('--transmission-port',
+parser.add_argument('-P', '--transmission-port',
 					default='9091',
 					metavar='<port>',
 					help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('--transmission-user',
+parser.add_argument('-u', '--transmission-user',
 					default=None,
 					metavar='<user>',
 					help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('--transmission-password',
+parser.add_argument('-p', '--transmission-password',
 					default=None,
 					metavar='<password>',
 					help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('--add-paused',
+parser.add_argument('-a', '--add-paused',
 					action='store_true',
 					help='Disables starting torrents after adding them')
-parser.add_argument('--log-file',
+parser.add_argument('-l', '--log-file',
 					default=None,
 					metavar='<logfile path>',
 					help='The logging file, if not specified, prints to output')
-parser.add_argument('--clear-added-items',
+parser.add_argument('-R', '--clear-added-items',
 					action='store_true',
 					help='Clears the list of added torrents. You can also do that by deleting the addeditems.txt')
-parser.add_argument('--download-dir',
+parser.add_argument('-d', '--download-dir',
 					default=None,
 					metavar='<dir>',
 					help='The directory where the downloaded contents will be saved in. Optional.')
-parser.add_argument('--force-reannounce',
+parser.add_argument('-r', '--force-reannounce',
 					default='60',
 					metavar='<minutes>',
                                         help='Force reannounce torrents added within given minutes. This may help getting a connection to other peers faster. 0 means disable (default: %(default)s)')
-parser.add_argument('--interval',
+parser.add_argument('-n', '--request-interval',
 					default='2',
 					metavar='<minutes>',
 					help='Time interval (minutes) between each request for all the rss feeds. (default: %(default)s)')
