@@ -61,8 +61,6 @@ def reannounceTorrentsWithin(minutes):
 
 # argparse configuration and argument definitions
 parser = argparse.ArgumentParser(description='Reads RSS/Atom Feeds and add torrents to Transmission')
-parser.add_argument('feed_urls', metavar='<url>', type=str, nargs='+',
-				   help='Feed Url(s)')
 parser.add_argument('-H', '--transmission-host',
 					metavar='<host>',
 					default='localhost',
@@ -79,33 +77,36 @@ parser.add_argument('-p', '--transmission-password',
 					default=None,
 					metavar='<password>',
 					help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('-a', '--add-paused',
-					action='store_true',
-					help='Disables starting torrents after adding them')
-parser.add_argument('-l', '--log-file',
-					default=None,
-					metavar='<logfile path>',
-					help='The logging file, if not specified, prints to output')
-parser.add_argument('-R', '--clear-added-items',
-					action='store_true',
-					help='Clears the list of added torrents. You can also do that by deleting the addeditems.txt')
+parser.add_argument('-L', '--feed-urls', type=str, nargs='+',
+					metavar='<url>',
+					help='Feed Url(s)')
 parser.add_argument('-d', '--download-dir',
 					default=None,
 					metavar='<dir>',
 					help='The directory where the downloaded contents will be saved in. Optional.')
-parser.add_argument('-r', '--force-reannounce',
+parser.add_argument('-l', '--log-file',
+					default=None,
+					metavar='<logfile>',
+					help='The logging file, if not specified, prints to output')
+parser.add_argument('-r', '--reannounce-interval',
 					default='60',
 					metavar='<minutes>',
-                                        help='Force reannounce torrents added within given minutes. This may help getting a connection to other peers faster. 0 means disable (default: %(default)s)')
+					help='Force reannounce torrents added within given minutes. This may help getting a connection to other peers faster. 0 means disable (default: %(default)s)')
 parser.add_argument('-n', '--request-interval',
 					default='2',
 					metavar='<minutes>',
 					help='Time interval (minutes) between each request for all the rss feeds. (default: %(default)s)')
-
-# parse the arguments
-args = parser.parse_args()
+parser.add_argument('-a', '--add-paused',
+					action='store_true',
+					help='Disables starting torrents after adding them')
+parser.add_argument('-R', '--clear-added-items',
+					action='store_true',
+					help='Clears the list of added torrents. You can also do that by deleting the addeditems.txt')
 
 if __name__ == "__main__":
+	# parse the arguments
+	args = parser.parse_args()
+
 	if args.log_file:
 		logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',level=logging.DEBUG, filename=args.log_file)
 	else:
@@ -127,21 +128,24 @@ if __name__ == "__main__":
 		exit(0)
 
 	try:
-		reannounceInterval = float(args.force_reannounce)
+		reannounceInterval = float(args.reannounce_interval)
 	except:
-		logging.error("Parameter \'--force-reannounce\' only takes floating/integer values, current value is \'{0}\'".format(args.force_reannounce))
+		logging.error("Parameter \'--reannounce-interval\' only takes floating/integer values, current value is \'{0}\'".format(args.force_reannounce))
 		exit(0)
 
 	try:
-		updateInterval = float(args.interval)
+		requestInterval = float(args.request_interval)
 	except:
-		logging.error("Parameter \'--interval\' only takes floating/integer values, current value is \'{0}\'".format(args.interval))
+		logging.error("Parameter \'--request-interval\' only takes floating/integer values, current value is \'{0}\'".format(args.interval))
 		exit(0)
 
+	if args.feed_urls == None:
+		logging.info("no feed urls, exiting...")
+		exit(0)
 	# read the feed urls from config
 	while True:
 		for feed_url in args.feed_urls:
 			parseFeed(feed_url)
 		if reannounceInterval:
 			reannounceTorrentsWithin(reannounceInterval)
-		time.sleep(int(updateInterval * 60))
+		time.sleep(int(requestInterval * 60))
