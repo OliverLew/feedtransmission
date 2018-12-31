@@ -6,7 +6,7 @@
     "add_paused": false,
     "log_file": null,
     "download_dir": null,
-    "reannounce_interval": 60,
+    "reannounce_span": 0,
     "request_interval": 5,
     "feed_urls": [
         "Your rss urls here"

@@ -87,8 +87,15 @@ def reannounceTorrentsWithin(minutes):
 def buildParser():
     # argparse configuration and argument definitions
     parser = argparse.ArgumentParser(description='''Reads RSS/Atom Feeds and
-                                     add torrents to Transmission''',
+                                     add torrents to Transmission (this is a
+                                     fork for NexusPHP based sites).''',
                                      parents=[config_parser])
+    parser.add_argument('-L', '--feed-urls',
+                        nargs='+',
+                        type=str,
+                        default=None,
+                        metavar='<url>',
+                        help='Feed Url(s)')
     parser.add_argument('-H', '--transmission-host',
                         metavar='<host>',
                         default='localhost',
@@ -105,12 +112,6 @@ def buildParser():
                         default=None,
                         metavar='<password>',
                         help='Port for Transmission RPC (default: %(default)s)')
-    parser.add_argument('-L', '--feed-urls',
-                        nargs='+',
-                        type=str,
-                        default=None,
-                        metavar='<url>',
-                        help='Feed Url(s)')
     parser.add_argument('-d', '--download-dir',
                         default=None,
                         metavar='<dir>',
@@ -121,16 +122,16 @@ def buildParser():
                         metavar='<logfile>',
                         help='''The logging file, if not specified or set to
                         \'-\', prints to output.''')
-    parser.add_argument('-r', '--reannounce-interval',
+    parser.add_argument('-r', '--reannounce-span',
                         type=float,
-                        default=60,
+                        default=0,
                         metavar='<minutes>',
                         help='''Force reannounce torrents added within given
                         minutes. This may help getting a connection to other
                         peers faster. 0 means disable (default: %(default)s)''')
     parser.add_argument('-n', '--request-interval',
                         type=float,
-                        default=2,
+                        default=5,
                         metavar='<minutes>',
                         help='''Time interval (minutes) between each request
                         for all the rss feeds. (default: %(default)s)''')
@@ -201,6 +202,6 @@ if __name__ == "__main__":
     while True:
         for feed_url in args.feed_urls:
             parseFeed(feed_url)
-        if args.reannounce_interval:
-            reannounceTorrentsWithin(args.reannounce_interval)
+        if args.reannounce_span:
+            reannounceTorrentsWithin(args.reannounce_span)
         time.sleep(int(args.request_interval * 60))
