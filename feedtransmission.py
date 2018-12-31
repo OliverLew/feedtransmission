@@ -119,8 +119,8 @@ def buildParser():
     parser.add_argument('-l', '--log-file',
                         default=None,
                         metavar='<logfile>',
-                        help='''The logging file, if not specified, prints to
-                        output''')
+                        help='''The logging file, if not specified or set to
+                        \'-\', prints to output.''')
     parser.add_argument('-r', '--reannounce-interval',
                         default=60,
                         metavar='<minutes>',
@@ -160,17 +160,18 @@ if __name__ == "__main__":
         configs = json.loads(open(config_args.config_file).read())
         # overwrite parser defaults with config file settings
         parser.set_defaults(**configs)
+        # just put the config file in the new parser too
+        parser.set_defaults(**vars(config_args))
 
     # parse the rest command line arguments, overwrite all previous values
     args = parser.parse_args(remaining_argv)
 
     # set logging style and log file
-    if args.log_file:
-        logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
-                            level=logging.DEBUG, filename=args.log_file)
-    else:
-        logging.basicConfig(format='%(asctime)s: %(message)s',
-                            level=logging.DEBUG)
+    if args.log_file == '-':
+        args.log_file = None
+    logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
+                        level=logging.DEBUG, filename=args.log_file)
+    logging.debug("Starting with: {}".format(vars(args)))
 
     # clears the added items file if asked for
     if args.clear_added_items:
