@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import json
 import logging
 import argparse
 
@@ -83,62 +84,85 @@ def reannounceTorrentsWithin(minutes):
                               .format(torrent.name))
 
 
-# argparse configuration and argument definitions
-parser = argparse.ArgumentParser(description='''Reads RSS/Atom Feeds and add
-                                 torrents to Transmission''')
-parser.add_argument('-H', '--transmission-host',
-                    metavar='<host>',
-                    default='localhost',
-                    help='Host for Transmission RPC (default: %(default)s)')
-parser.add_argument('-P', '--transmission-port',
-                    default='9091',
-                    metavar='<port>',
-                    help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('-u', '--transmission-user',
-                    default=None,
-                    metavar='<user>',
-                    help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('-p', '--transmission-password',
-                    default=None,
-                    metavar='<password>',
-                    help='Port for Transmission RPC (default: %(default)s)')
-parser.add_argument('-L', '--feed-urls', type=str, nargs='+',
-                    metavar='<url>',
-                    help='Feed Url(s)')
-parser.add_argument('-d', '--download-dir',
-                    default=None,
-                    metavar='<dir>',
-                    help='''The directory where the downloaded contents will be
-                    saved in. Optional.''')
-parser.add_argument('-l', '--log-file',
-                    default=None,
-                    metavar='<logfile>',
-                    help='''The logging file, if not specified, prints to
-                    output''')
-parser.add_argument('-r', '--reannounce-interval',
-                    default='60',
-                    metavar='<minutes>',
-                    help='''Force reannounce torrents added within given
-                    minutes. This may help getting a connection to other peers
-                    faster. 0 means disable (default: %(default)s)''')
-parser.add_argument('-n', '--request-interval',
-                    default='2',
-                    metavar='<minutes>',
-                    help='''Time interval (minutes) between each request for
-                    all the rss feeds. (default: %(default)s)''')
-parser.add_argument('-a', '--add-paused',
-                    action='store_true',
-                    help='Disables starting torrents after adding them')
-parser.add_argument('-R', '--clear-added-items',
-                    action='store_true',
-                    help='''Clears the list of added torrents. You can also do
-                    that by deleting the addeditems.txt''')
+def buildParser():
+    # argparse configuration and argument definitions
+    parser = argparse.ArgumentParser(description='''Reads RSS/Atom Feeds and
+                                     add torrents to Transmission''',
+                                     parents=[config_parser])
+    parser.add_argument('-H', '--transmission-host',
+                        metavar='<host>',
+                        default='localhost',
+                        help='Host for Transmission RPC (default: %(default)s)')
+    parser.add_argument('-P', '--transmission-port',
+                        default='9091',
+                        metavar='<port>',
+                        help='Port for Transmission RPC (default: %(default)s)')
+    parser.add_argument('-u', '--transmission-user',
+                        default=None,
+                        metavar='<user>',
+                        help='Port for Transmission RPC (default: %(default)s)')
+    parser.add_argument('-p', '--transmission-password',
+                        default=None,
+                        metavar='<password>',
+                        help='Port for Transmission RPC (default: %(default)s)')
+    parser.add_argument('-L', '--feed-urls',
+                        nargs='+',
+                        type=str,
+                        default=None,
+                        metavar='<url>',
+                        help='Feed Url(s)')
+    parser.add_argument('-d', '--download-dir',
+                        default=None,
+                        metavar='<dir>',
+                        help='''The directory where the downloaded contents
+                        will be saved in. Optional.''')
+    parser.add_argument('-l', '--log-file',
+                        default=None,
+                        metavar='<logfile>',
+                        help='''The logging file, if not specified, prints to
+                        output''')
+    parser.add_argument('-r', '--reannounce-interval',
+                        default=60,
+                        metavar='<minutes>',
+                        help='''Force reannounce torrents added within given
+                        minutes. This may help getting a connection to other
+                        peers faster. 0 means disable (default: %(default)s)''')
+    parser.add_argument('-n', '--request-interval',
+                        default=2,
+                        metavar='<minutes>',
+                        help='''Time interval (minutes) between each request
+                        for all the rss feeds. (default: %(default)s)''')
+    parser.add_argument('-a', '--add-paused',
+                        action='store_true',
+                        help='Disables starting torrents after adding them')
+    parser.add_argument('-R', '--clear-added-items',
+                        action='store_true',
+                        help='''Clears the list of added torrents. You can also
+                        do that by deleting the addeditems.txt''')
+    return parser
 
 
 if __name__ == "__main__":
+    # read the config file parameter
+    config_parser = argparse.ArgumentParser(add_help=False)
+    config_parser.add_argument('-c', '--config-file',
+                               metavar='<config file>',
+                               help='''Specify config file. The command line
+                               parameters will overwrite the settings in the
+                               config file.''')
+    config_args, remaining_argv = config_parser.parse_known_args()
 
-    # parse the arguments
-    args = parser.parse_args()
+    # set the parser with default values
+    parser = buildParser()
+
+    # try to parse config file
+    if config_args.config_file:
+        configs = json.loads(open(config_args.config_file).read())
+        # overwrite parser defaults with config file settings
+        parser.set_defaults(**configs)
+
+    # parse the rest command line arguments, overwrite all previous values
+    args = parser.parse_args(remaining_argv)
 
     # set logging style and log file
     if args.log_file:
