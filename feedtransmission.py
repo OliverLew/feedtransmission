@@ -122,12 +122,14 @@ def buildParser():
                         help='''The logging file, if not specified or set to
                         \'-\', prints to output.''')
     parser.add_argument('-r', '--reannounce-interval',
+                        type=float,
                         default=60,
                         metavar='<minutes>',
                         help='''Force reannounce torrents added within given
                         minutes. This may help getting a connection to other
                         peers faster. 0 means disable (default: %(default)s)''')
     parser.add_argument('-n', '--request-interval',
+                        type=float,
                         default=2,
                         metavar='<minutes>',
                         help='''Time interval (minutes) between each request
@@ -192,22 +194,6 @@ if __name__ == "__main__":
                       err=str(sys.exc_info()[0]).strip()))
         exit(0)
 
-    try:
-        reannounceInterval = float(args.reannounce_interval)
-    except:
-        logging.error("""Parameter \'--reannounce-interval\' only takes
-                      floating/integer values, current value is
-                      \'{0}\'""".format(args.force_reannounce))
-        exit(0)
-
-    try:
-        requestInterval = float(args.request_interval)
-    except:
-        logging.error("""Parameter \'--request-interval\' only takes
-                      floating/integer values, current value is
-                      \'{0}\'""".format(args.interval))
-        exit(0)
-
     if args.feed_urls == None:
         logging.info("no feed urls, exiting...")
         exit(0)
@@ -215,6 +201,6 @@ if __name__ == "__main__":
     while True:
         for feed_url in args.feed_urls:
             parseFeed(feed_url)
-        if reannounceInterval:
-            reannounceTorrentsWithin(reannounceInterval)
-        time.sleep(int(requestInterval * 60))
+        if args.reannounce_interval:
+            reannounceTorrentsWithin(args.reannounce_interval)
+        time.sleep(int(args.request_interval * 60))
