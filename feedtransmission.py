@@ -68,12 +68,7 @@ def parse_feed(feed_url):
 
     for item in feed.entries:
         if item.link not in addeditems:
-            try:
-                addItem(item)
-            except:
-                logging.error("Error adding item \'{url}\': {err}".format(
-                              url=item.enclosures[0]['href'],
-                              err=str(sys.exc_info()[0]).strip()))
+            add_item(item)
 
 
 def reannounce_torrents_within(minutes):
@@ -199,13 +194,9 @@ if __name__ == "__main__":
                                     port=args.transmission_port,
                                     user=args.transmission_user,
                                     password=args.transmission_password)
-    except transmissionrpc.error.TransmissionError as te:
-        logging.error("Error connecting to Transmission: {err}".format(
-                      err=str(te).strip()))
-        exit(0)
-    except:
-        logging.error("Error connecting to Transmission: {err}".format(
-                      err=str(sys.exc_info()[0]).strip()))
+    except transmissionrpc.error.TransmissionError as e:
+        logging.error("Error connecting to Transmission: %s",
+                      err=str(e).strip())
         exit(0)
 
     if args.feed_urls is None:
