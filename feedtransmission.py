@@ -1,7 +1,9 @@
 #!/usr/bin/python
+"""
+Script to fetch rss feed and add torrent to transmission
+"""
 
 import os
-import sys
 import time
 import json
 import logging
@@ -11,54 +13,58 @@ import feedparser
 import transmissionrpc
 
 # path to the added items list file
-added_items_filepath = os.path.join(
-        os.path.abspath(os.path.dirname(os.path.abspath(__file__))),
-        'addeditems.txt')
+script_dir = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+added_items_filepath = os.path.join(script_dir, 'addeditems.txt')
 
 
-def readAddedItems():
-    # read the added items list from the file
+def read_added_items():
+    """
+    read the added items list from the file
+    """
     addeditems = []
     if os.path.exists(added_items_filepath):
-        with open(added_items_filepath,'r') as f:
-            for line in f:
+        with open(added_items_filepath, 'r') as added_items:
+            for line in added_items:
                 addeditems.append(line.rstrip('\n'))
     return addeditems
 
 
-def addItem(item):
-    # add the link to transmission and appends the link to the added items
+def add_item(item):
+    """
+    add the link to transmission and appends the link to the added items
+    """
     if args.download_dir:
-        logging.info("Adding Torrent: {title} ({link}) to {dl}".format(
+        logging.info("Adding Torrent: %s (%s) to %s",
                      title=item.title,
                      link=item.enclosures[0]['href'],
-                     dl=args.download_dir))
+                     dl=args.download_dir)
         tc.add_torrent(item.enclosures[0]['href'],
                        download_dir=args.download_dir,
                        paused=args.add_paused)
     else:
-        logging.info("Adding Torrent: {title} ({link}) to {dl}".format(
+        logging.info("Adding Torrent: %s (%s) to %s",
                      title=item.title,
                      link=item.enclosures[0]['href'],
-                     dl="default directory"))
+                     dl="default directory")
         tc.add_torrent(item.enclosures[0]['href'],
                        paused=args.add_paused)
-    with open(added_items_filepath, 'a') as f:
-        f.write(item.link + '\n')
+    with open(added_items_filepath, 'a') as added_items:
+        added_items.write(item.link + '\n')
 
 
-def parseFeed(feed_url):
-    # parses and adds torrents from feed
+def parse_feed(feed_url):
+    """
+    parses and adds torrents from feed
+    """
     feed = feedparser.parse(feed_url)
     if feed.bozo and feed.bozo_exception:
-        logging.error("Error reading feed \'{url}\': {err}".format(
+        logging.error("Error reading feed \'%s\': %s",
                       url=feed_url,
-                      err=str(feed.bozo_exception).strip()))
-        return
-    else:
-        logging.info("Reading feed \'{url}\'".format(url=feed_url))
+                      err=str(feed.bozo_exception).strip())
+        exit(0)
+    logging.info("Reading feed \'%s\'", url=feed_url)
 
-    addeditems = readAddedItems()
+    addeditems = read_added_items()
 
     for item in feed.entries:
         if item.link not in addeditems:
@@ -70,8 +76,10 @@ def parseFeed(feed_url):
                               err=str(sys.exc_info()[0]).strip()))
 
 
-def reannounceTorrentsWithin(minutes):
-    # reannounce the torrents added within the minutes given
+def reannounce_torrents_within(minutes):
+    """
+    reannounce the torrents added within the minutes given
+    """
     torrents = tc.get_torrents()
     for torrent in torrents:
         if time.time() - torrent.addedDate < minutes * 60:
@@ -84,7 +92,7 @@ def reannounceTorrentsWithin(minutes):
                               .format(torrent.name))
 
 
-def buildParser():
+def build_parser():
     # argparse configuration and argument definitions
     parser = argparse.ArgumentParser(description='''Reads RSS/Atom Feeds and
                                      add torrents to Transmission (this is a
@@ -99,26 +107,30 @@ def buildParser():
     parser.add_argument('-H', '--transmission-host',
                         metavar='<host>',
                         default='localhost',
-                        help='Host for Transmission RPC (default: %(default)s)')
+                        help='''Host for Transmission RPC
+                        (default: %(default)s)''')
     parser.add_argument('-P', '--transmission-port',
                         default='9091',
                         metavar='<port>',
-                        help='Port for Transmission RPC (default: %(default)s)')
+                        help='''Port for Transmission RPC
+                        (default: %(default)s)''')
     parser.add_argument('-u', '--transmission-user',
                         default=None,
                         metavar='<user>',
-                        help='Port for Transmission RPC (default: %(default)s)')
+                        help='''User name for Transmission RPC
+                        (default: %(default)s)''')
     parser.add_argument('-p', '--transmission-password',
                         default=None,
                         metavar='<password>',
-                        help='Port for Transmission RPC (default: %(default)s)')
+                        help='''Password for Transmission RPC
+                        (default: %(default)s)''')
     parser.add_argument('-d', '--download-dir',
                         default=None,
                         metavar='<dir>',
                         help='''The directory where the downloaded contents
                         will be saved in. Optional.''')
     parser.add_argument('-l', '--log-file',
-                        default=None,
+                        default='-',
                         metavar='<logfile>',
                         help='''The logging file, if not specified or set to
                         \'-\', prints to output.''')
@@ -128,7 +140,8 @@ def buildParser():
                         metavar='<minutes>',
                         help='''Force reannounce torrents added within given
                         minutes. This may help getting a connection to other
-                        peers faster. 0 means disable (default: %(default)s)''')
+                        peers faster.
+                        0 means disable (default: %(default)s)''')
     parser.add_argument('-n', '--request-interval',
                         type=float,
                         default=5,
@@ -156,7 +169,7 @@ if __name__ == "__main__":
     config_args, remaining_argv = config_parser.parse_known_args()
 
     # set the parser with default values
-    parser = buildParser()
+    parser = build_parser()
 
     # try to parse config file
     if config_args.config_file:
@@ -195,13 +208,13 @@ if __name__ == "__main__":
                       err=str(sys.exc_info()[0]).strip()))
         exit(0)
 
-    if args.feed_urls == None:
+    if args.feed_urls is None:
         logging.info("no feed urls, exiting...")
         exit(0)
     # read the feed urls from config
     while True:
         for feed_url in args.feed_urls:
-            parseFeed(feed_url)
+            parse_feed(feed_url)
         if args.reannounce_span:
-            reannounceTorrentsWithin(args.reannounce_span)
+            reannounce_torrents_within(args.reannounce_span)
         time.sleep(int(args.request_interval * 60))
