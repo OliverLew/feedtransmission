@@ -78,13 +78,8 @@ def reannounce_torrents_within(minutes):
     torrents = tc.get_torrents()
     for torrent in torrents:
         if time.time() - torrent.addedDate < minutes * 60:
-            try:
-                tc.reannounce_torrent(torrent.id)
-                logging.info("Reannounced torrent: \'{}\'"
-                             .format(torrent.name))
-            except:
-                logging.error("Reannouncing torrent failed: \'{}\'"
-                              .format(torrent.name))
+            tc.reannounce_torrent(torrent.id)
+            logging.info("Reannounced torrent: \'%s\'", torrent.name)
 
 
 def build_parser():
@@ -179,10 +174,14 @@ if __name__ == "__main__":
 
     # set logging style and log file
     if args.log_file == '-':
-        args.log_file = None
+        logfile = None
+        print("Not setting logfile, printing to screen.")
+    else:
+        logfile = os.path.join(script_dir, args.log_file)
     logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s',
-                        level=logging.DEBUG, filename=args.log_file)
-    logging.debug("Starting with: {}".format(vars(args)))
+                        level=logging.DEBUG,
+                        filename=logfile)
+    logging.debug("Starting with: %s", vars(args))
 
     # clears the added items file if asked for
     if args.clear_added_items:
