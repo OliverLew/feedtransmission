@@ -35,17 +35,17 @@ def add_item(item):
     """
     if args.download_dir:
         logging.info("Adding Torrent: %s (%s) to %s",
-                     title=item.title,
-                     link=item.enclosures[0]['href'],
-                     dl=args.download_dir)
+                     item.title,
+                     item.enclosures[0]['href'],
+                     args.download_dir)
         tc.add_torrent(item.enclosures[0]['href'],
                        download_dir=args.download_dir,
                        paused=args.add_paused)
     else:
         logging.info("Adding Torrent: %s (%s) to %s",
-                     title=item.title,
-                     link=item.enclosures[0]['href'],
-                     dl="default directory")
+                     item.title,
+                     item.enclosures[0]['href'],
+                     "default directory")
         tc.add_torrent(item.enclosures[0]['href'],
                        paused=args.add_paused)
     with open(added_items_filepath, 'a') as added_items:
@@ -59,10 +59,10 @@ def parse_feed(feed_url):
     feed = feedparser.parse(feed_url)
     if feed.bozo and feed.bozo_exception:
         logging.error("Error reading feed \'%s\': %s",
-                      url=feed_url,
-                      err=str(feed.bozo_exception).strip())
+                      feed_url,
+                      str(feed.bozo_exception).strip())
         exit(0)
-    logging.info("Reading feed \'%s\'", url=feed_url)
+    logging.info("Reading feed \'%s\'", feed_url)
 
     addeditems = read_added_items()
 
@@ -195,7 +195,7 @@ if __name__ == "__main__":
                                     password=args.transmission_password)
     except transmissionrpc.error.TransmissionError as e:
         logging.error("Error connecting to Transmission: %s",
-                      err=str(e).strip())
+                      str(e).strip())
         exit(0)
 
     if args.feed_urls is None:
