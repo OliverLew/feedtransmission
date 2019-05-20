@@ -8,6 +8,7 @@ import time
 import json
 import logging
 import argparse
+import requests
 
 import feedparser
 import transmissionrpc
@@ -29,25 +30,38 @@ def read_added_items():
     return addeditems
 
 
+def get_item_link(item):
+    if hasattr(item, "enclosures") and len(item.enclosures) > 0:
+        # NexusPHP stores the link here
+        return item.enclosures[0].get('href') or item.enclosures[0].get('url')
+    else:
+        # normal location
+        return item.link
+
+
+def download_torrent(url):
+    with requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}) as response:
+        content_hdr = response.headers.get("Content-Disposition")
+        file_name = content_hdr.split('filename=')[1].split(';')[0]
+        with open(file_name, 'wb') as out_file:
+            out_file.write(response.content)
+    return file_name
+
+
 def add_item(item):
     """
     add the link to transmission and appends the link to the added items
     """
-    if args.download_dir:
-        logging.info("Adding Torrent: %s (%s) to %s",
-                     item.title,
-                     item.enclosures[0]['href'],
-                     args.download_dir)
-        tc.add_torrent(item.enclosures[0]['href'],
-                       download_dir=args.download_dir,
-                       paused=args.add_paused)
-    else:
-        logging.info("Adding Torrent: %s (%s) to %s",
-                     item.title,
-                     item.enclosures[0]['href'],
-                     "default directory")
-        tc.add_torrent(item.enclosures[0]['href'],
-                       paused=args.add_paused)
+    torrent_link = get_item_link(item)
+    torrent_file = download_torrent(torrent_link)
+    torrent_path = os.path.join(script_dir, torrent_file)
+    logging.info("Adding Torrent: %s (%s) to %s",
+                 item.title,
+                 torrent_path,
+                 args.download_dir)
+    tc.add_torrent(torrent_path,
+                   download_dir=args.download_dir,
+                   paused=args.add_paused)
     with open(added_items_filepath, 'a') as added_items:
         added_items.write(item.link + '\n')
 
@@ -56,7 +70,7 @@ def parse_feed(feed_url):
     """
     parses and adds torrents from feed
     """
-    feed = feedparser.parse(feed_url)
+    feed = feedparser.parse(feed_url, agent="Mozilla/5.0")
     if feed.bozo and feed.bozo_exception:
         logging.error("Error reading feed \'%s\': %s",
                       feed_url,
