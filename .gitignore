@@ -1,1 +1,4 @@
+*.log
+*.torrent
 addeditems.txt
+myconfig.json
