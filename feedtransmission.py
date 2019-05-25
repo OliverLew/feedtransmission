@@ -219,6 +219,7 @@ if __name__ == "__main__":
     while True:
         for feed_url in args.feed_urls:
             parse_feed(feed_url)
-        if args.reannounce_span:
-            reannounce_torrents_within(args.reannounce_span)
-        time.sleep(int(args.request_interval * 60))
+        for i in range(int(args.request_interval)):
+            if args.reannounce_span:
+                reannounce_torrents_within(args.reannounce_span)
+            time.sleep(60)
