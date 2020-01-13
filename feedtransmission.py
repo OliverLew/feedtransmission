@@ -98,65 +98,50 @@ def reannounce_torrents_within(minutes):
 
 def build_parser():
     # argparse configuration and argument definitions
-    parser = argparse.ArgumentParser(description='''Reads RSS/Atom Feeds and
-                                     add torrents to Transmission (this is a
-                                     fork for NexusPHP based sites).''',
-                                     parents=[config_parser])
-    parser.add_argument('-L', '--feed-urls',
-                        nargs='+',
-                        type=str,
-                        default=None,
-                        metavar='<url>',
+    parser = argparse.ArgumentParser(
+        description='''Reads RSS/Atom Feeds and add torrents to Transmission
+                       (this is a fork for NexusPHP based sites).''',
+        parents=[config_parser])
+    parser.add_argument('-L', '--feed-urls', metavar='<url>',
+                        nargs='+', type=str, default=None,
                         help='Feed Url(s)')
-    parser.add_argument('-H', '--transmission-host',
-                        metavar='<host>',
+    parser.add_argument('-H', '--host', metavar='<host>',
                         default='localhost',
                         help='''Host for Transmission RPC
                         (default: %(default)s)''')
-    parser.add_argument('-P', '--transmission-port',
+    parser.add_argument('-P', '--port', metavar='<port>',
                         default='9091',
-                        metavar='<port>',
                         help='''Port for Transmission RPC
                         (default: %(default)s)''')
-    parser.add_argument('-u', '--transmission-user',
+    parser.add_argument('-u', '--user', metavar='<user>',
                         default=None,
-                        metavar='<user>',
                         help='''User name for Transmission RPC
                         (default: %(default)s)''')
-    parser.add_argument('-p', '--transmission-password',
+    parser.add_argument('-p', '--password', metavar='<password>',
                         default=None,
-                        metavar='<password>',
                         help='''Password for Transmission RPC
                         (default: %(default)s)''')
-    parser.add_argument('-d', '--download-dir',
+    parser.add_argument('-d', '--download-dir', metavar='<dir>',
                         default=None,
-                        metavar='<dir>',
                         help='''The directory where the downloaded contents
                         will be saved in. Optional.''')
-    parser.add_argument('-l', '--log-file',
+    parser.add_argument('-l', '--log-file', metavar='<logfile>',
                         default='-',
-                        metavar='<logfile>',
                         help='''The logging file, if not specified or set to
                         \'-\', prints to output.''')
-    parser.add_argument('-r', '--reannounce-span',
-                        type=float,
-                        default=0,
-                        metavar='<minutes>',
+    parser.add_argument('-r', '--reannounce-span', metavar='<minutes>',
+                        type=float, default=0,
                         help='''Force reannounce torrents added within given
                         minutes. This may help getting a connection to other
                         peers faster.
                         0 means disable (default: %(default)s)''')
-    parser.add_argument('-n', '--request-interval',
-                        type=float,
-                        default=5,
-                        metavar='<minutes>',
+    parser.add_argument('-N', '--request-interval', metavar='<minutes>',
+                        type=float, default=5,
                         help='''Time interval (minutes) between each request
                         for all the rss feeds. (default: %(default)s)''')
-    parser.add_argument('-a', '--add-paused',
-                        action='store_true',
+    parser.add_argument('-a', '--add-paused', action='store_true',
                         help='Disables starting torrents after adding them')
-    parser.add_argument('-R', '--clear-added-items',
-                        action='store_true',
+    parser.add_argument('-R', '--clear-added-items', action='store_true',
                         help='''Clears the list of added torrents. You can also
                         do that by deleting the addeditems.txt''')
     return parser
@@ -208,8 +193,7 @@ if __name__ == "__main__":
                                     user=args.transmission_user,
                                     password=args.transmission_password)
     except transmissionrpc.error.TransmissionError as e:
-        logging.error("Error connecting to Transmission: %s",
-                      str(e).strip())
+        logging.error("Error connecting to Transmission: %s", str(e).strip())
         exit(0)
 
     if args.feed_urls is None:
